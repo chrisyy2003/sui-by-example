@@ -2,30 +2,33 @@ module owner::counter {
     use sui::transfer;
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
+    use sui::coin::{Self, Coin};
 
     /// A shared counter.
+    struct COUNTER has drop {}
+
     struct ShareCounter has key {
         id: UID,
         owner: address,
-        value: u64
+        value: u64,
+        insideCoin: Coin<COUNTER>
     }
+
 
     struct Counter has key {
         id: UID,
         owner: address,
-        value: u64
-    }
-
-    public fun owner(counter: &ShareCounter): address {
-        counter.owner
-    }
-
-    public fun value(counter: &ShareCounter): u64 {
-        counter.value
+        value: u64,
     }
 
     /// Create and share a Counter object.
-    fun init(ctx: &mut TxContext) {
+    fun init(w: COUNTER, ctx: &mut TxContext) {
+
+        let cap = coin::create_currency(w, 2, ctx);
+        let coin = coin::mint(&mut cap, 100, ctx);
+
+        transfer::transfer(cap, tx_context::sender(ctx));
+
         transfer::transfer(Counter {
             id: object::new(ctx),
             owner: tx_context::sender(ctx),
@@ -35,7 +38,8 @@ module owner::counter {
         transfer::share_object(ShareCounter {
             id: object::new(ctx),
             owner: tx_context::sender(ctx),
-            value: 0
+            value: 0,
+            insideCoin: coin
         })
     }
 

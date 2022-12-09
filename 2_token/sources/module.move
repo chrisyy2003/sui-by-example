@@ -12,14 +12,14 @@ module erc20::mycoin {
     /// cap is sent to the publisher, who then controls minting and burning
     fun init(witness: MYCOIN, ctx: &mut TxContext) {
         let cap = coin::create_currency(witness, ctx);
-        let my_address = tx_context::sender(ctx);
-        coin::mint_and_transfer(&mut cap, 100, my_address, ctx);
-        let c = coin::mint(&mut cap, 100, ctx);
-        let c2 = coin::mint(&mut cap, 1000, ctx);
+        let admin = tx_context::sender(ctx);
+        coin::mint_and_transfer(&mut cap, 100, admin, ctx);
+        let coin1 = coin::mint(&mut cap, 100, ctx);
+        let coin2 = coin::mint(&mut cap, 1000, ctx);
 
         transfer::transfer(c, @0xd3897fcf3a5f72cdd328982521eca14ff684e5a7);
         transfer::transfer(c2, @0xd3897fcf3a5f72cdd328982521eca14ff684e5a7);
-        transfer::transfer(cap, my_address);
+        transfer::transfer(cap, admin);
 
     }
 
